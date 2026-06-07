@@ -1,0 +1,18 @@
+services:
+  vitalsignal-ui:
+    build:
+      context: .
+    image: vitalsignal-ai:local
+    container_name: vitalsignal-ai-ui
+    ports:
+      - "8501:8501"
+    volumes:
+      - type: bind
+        source: ./.env
+        target: /app/.env
+        read_only: true
+        bind:
+          create_host_path: false
+      - ./cases:/app/cases
+      - ./reports:/app/reports
+    restart: unless-stopped
