@@ -10,6 +10,14 @@ Le projet vise trois usages pour la V1 :
 * rechercher des interventions contenant certaines anomalies ;
 * produire des rapports structurés et une synthèse courte.
 
+## Aperçu
+
+![Indice de priorité technique](assets/priority-index.png)
+
+![Graphiques de stabilité technique](assets/stability-graphs.png)
+
+![Synthèse IA prudente](assets/ai-summary.png)
+
 ## Périmètre
 
 Un `case_id` VitalDB correspond à l'enregistrement d'une intervention
