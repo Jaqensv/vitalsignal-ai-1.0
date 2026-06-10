@@ -819,7 +819,7 @@ def _format_score_explanation(value: int, level: str) -> str:
     return (
         "<div class='vs-card'>"
         f"<p class='vs-card-title'>Niveau actuel : {PRIORITY_LABELS[level]}</p>"
-        "<p class='vs-muted'>Indice de priorisation technique, pas mesure de gravité clinique.</p>"
+        "<p class='vs-muted'>Indice de priorisation technique, sans valeur de gravité clinique.</p>"
         "<div class='vs-scale'>"
         "<span><b>0</b> aucune</span>"
         "<span><b>1-24</b> faible</span>"
