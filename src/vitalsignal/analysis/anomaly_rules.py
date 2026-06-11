@@ -17,9 +17,9 @@ HYPERTENSION_THRESHOLD = 120.0
 HYPERTENSION_MIN_DURATION_SECONDS = 60
 SEVERE_HYPERTENSION_THRESHOLD = 140.0
 SEVERE_HYPERTENSION_MIN_DURATION_SECONDS = 15
-DESATURATION_THRESHOLD = 92.0
+DESATURATION_THRESHOLD = 90.0
 DESATURATION_MIN_DURATION_SECONDS = 30
-SEVERE_DESATURATION_THRESHOLD = 90.0
+SEVERE_DESATURATION_THRESHOLD = 85.0
 SEVERE_DESATURATION_MIN_DURATION_SECONDS = 15
 TACHYCARDIA_THRESHOLD = 120.0
 BRADYCARDIA_THRESHOLD = 50.0
@@ -220,7 +220,7 @@ def detect_desaturation(
     series: pd.Series,
     sample_interval_seconds: int = 1,
 ) -> list[AnomalyEpisode]:
-    """Detect sustained periods where oxygen saturation is below 92 percent."""
+    """Detect sustained periods where oxygen saturation is below the configured threshold."""
     if sample_interval_seconds < 1:
         raise ValueError("sample_interval_seconds must be a positive integer")
 

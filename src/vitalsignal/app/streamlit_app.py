@@ -6,6 +6,22 @@ from html import escape
 import pandas as pd
 
 from vitalsignal.analysis.case_search import SearchResult, search_interventions
+from vitalsignal.analysis.anomaly_rules import (
+    BRADYCARDIA_THRESHOLD,
+    DESATURATION_THRESHOLD,
+    HIGH_ETCO2_THRESHOLD,
+    HYPERTENSION_THRESHOLD,
+    HYPOTENSION_THRESHOLD,
+    LOW_ETCO2_THRESHOLD,
+    SEVERE_BRADYCARDIA_THRESHOLD,
+    SEVERE_DESATURATION_THRESHOLD,
+    SEVERE_HIGH_ETCO2_THRESHOLD,
+    SEVERE_HYPERTENSION_THRESHOLD,
+    SEVERE_HYPOTENSION_THRESHOLD,
+    SEVERE_LOW_ETCO2_THRESHOLD,
+    SEVERE_TACHYCARDIA_THRESHOLD,
+    TACHYCARDIA_THRESHOLD,
+)
 from vitalsignal.analysis.pipeline import InterventionAnalysis
 from vitalsignal.analysis.preprocessing import clean_impossible_values
 from vitalsignal.app.main import run_case_analysis_with_frame
@@ -599,16 +615,20 @@ def _build_stability_figures(
             "SpO2",
             "SpO2 (saturation périphérique en oxygène)",
             "%",
-            ((92, "Seuil désaturation", "#e0c26b"), (90, "Seuil sévère", "#ff6b6b")),
+            (
+                (DESATURATION_THRESHOLD, "Seuil désaturation", "#e0c26b"),
+                (SEVERE_DESATURATION_THRESHOLD, "Seuil sévère", "#ff6b6b"),
+            ),
         ),
         (
             "HR",
             "HR (fréquence cardiaque)",
             "bpm",
             (
-                (50, "Bradycardie", "#e0c26b"),
-                (120, "Tachycardie", "#e0c26b"),
-                (150, "Tachycardie sévère", "#ff6b6b"),
+                (BRADYCARDIA_THRESHOLD, "Bradycardie", "#e0c26b"),
+                (SEVERE_BRADYCARDIA_THRESHOLD, "Bradycardie sévère", "#ff6b6b"),
+                (TACHYCARDIA_THRESHOLD, "Tachycardie", "#e0c26b"),
+                (SEVERE_TACHYCARDIA_THRESHOLD, "Tachycardie sévère", "#ff6b6b"),
             ),
         ),
         (
@@ -616,9 +636,10 @@ def _build_stability_figures(
             "EtCO2 (dioxyde de carbone en fin d'expiration)",
             "mmHg",
             (
-                (25, "EtCO2 bas", "#e0c26b"),
-                (50, "EtCO2 haut", "#e0c26b"),
-                (60, "EtCO2 sévère", "#ff6b6b"),
+                (LOW_ETCO2_THRESHOLD, "EtCO2 bas", "#e0c26b"),
+                (SEVERE_LOW_ETCO2_THRESHOLD, "EtCO2 bas sévère", "#ff6b6b"),
+                (HIGH_ETCO2_THRESHOLD, "EtCO2 haut", "#e0c26b"),
+                (SEVERE_HIGH_ETCO2_THRESHOLD, "EtCO2 haut sévère", "#ff6b6b"),
             ),
         ),
     ):
@@ -668,9 +689,10 @@ def _build_pressure_figure(go, frame: pd.DataFrame, interval_seconds: int):
     _add_thresholds(
         figure,
         (
-            (65, "Hypotension", "#e0c26b"),
-            (120, "Hypertension", "#e0c26b"),
-            (140, "Hypertension sévère", "#ff6b6b"),
+            (HYPOTENSION_THRESHOLD, "Hypotension", "#e0c26b"),
+            (SEVERE_HYPOTENSION_THRESHOLD, "Hypotension sévère", "#ff6b6b"),
+            (HYPERTENSION_THRESHOLD, "Hypertension", "#e0c26b"),
+            (SEVERE_HYPERTENSION_THRESHOLD, "Hypertension sévère", "#ff6b6b"),
         ),
     )
     _style_figure(figure, "mmHg")

@@ -4,7 +4,7 @@ from vitalsignal.analysis.spo2_analysis import analyze_spo2
 
 
 def test_analyze_spo2_detects_desaturation_on_usable_signal() -> None:
-    frame = pd.DataFrame({"SpO2": [98.0] * 10 + [90.0] * 30 + [98.0] * 10})
+    frame = pd.DataFrame({"SpO2": [98.0] * 10 + [89.0] * 30 + [98.0] * 10})
 
     analysis = analyze_spo2(frame)
 

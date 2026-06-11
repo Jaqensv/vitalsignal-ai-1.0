@@ -113,7 +113,7 @@ def test_missing_value_interrupts_hypertension_episode() -> None:
 
 
 def test_detect_desaturation_finds_sustained_episode() -> None:
-    signal = pd.Series([98.0] * 5 + [90.0] * 30 + [98.0] * 5)
+    signal = pd.Series([98.0] * 5 + [89.0] * 30 + [98.0] * 5)
 
     episodes = detect_desaturation(signal)
 
@@ -122,23 +122,23 @@ def test_detect_desaturation_finds_sustained_episode() -> None:
     assert episodes[0].signal == "SpO2"
     assert episodes[0].start_seconds == 5
     assert episodes[0].duration_seconds == 30
-    assert episodes[0].extreme_value == 90.0
+    assert episodes[0].extreme_value == 89.0
 
 
 def test_detect_desaturation_ignores_short_episode() -> None:
-    signal = pd.Series([90.0] * 29 + [98.0])
+    signal = pd.Series([89.0] * 29 + [98.0])
 
     assert detect_desaturation(signal) == []
 
 
 def test_missing_value_interrupts_desaturation_episode() -> None:
-    signal = pd.Series([90.0] * 20 + [None] + [90.0] * 20)
+    signal = pd.Series([89.0] * 20 + [None] + [89.0] * 20)
 
     assert detect_desaturation(signal) == []
 
 
 def test_detect_desaturation_uses_sample_interval() -> None:
-    signal = pd.Series([90.0] * 15)
+    signal = pd.Series([89.0] * 15)
 
     episodes = detect_desaturation(signal, sample_interval_seconds=2)
 
@@ -147,7 +147,7 @@ def test_detect_desaturation_uses_sample_interval() -> None:
 
 
 def test_detect_desaturation_keeps_short_severe_episode() -> None:
-    signal = pd.Series([98.0] * 5 + [88.0] * 15 + [98.0] * 5)
+    signal = pd.Series([98.0] * 5 + [84.0] * 15 + [98.0] * 5)
 
     episodes = detect_desaturation(signal)
 
@@ -157,7 +157,7 @@ def test_detect_desaturation_keeps_short_severe_episode() -> None:
 
 
 def test_one_episode_can_have_both_desaturation_qualifications() -> None:
-    signal = pd.Series([91.0] * 15 + [88.0] * 15 + [91.0] * 15)
+    signal = pd.Series([89.0] * 15 + [84.0] * 15 + [89.0] * 15)
 
     episodes = detect_desaturation(signal)
 
@@ -167,7 +167,7 @@ def test_one_episode_can_have_both_desaturation_qualifications() -> None:
 
 
 def test_severe_desaturation_duration_must_be_continuous() -> None:
-    signal = pd.Series([88.0] * 10 + [91.0] + [88.0] * 10)
+    signal = pd.Series([84.0] * 10 + [89.0] + [84.0] * 10)
 
     assert detect_desaturation(signal) == []
 
