@@ -25,8 +25,8 @@ chirurgicale. Ce n'est pas une mesure isolée ni un suivi postopératoire.
 
 Signaux actuellement traités :
 
-* `ART_MAP` : pression artérielle moyenne invasive ;
-* `NIBP_MAP` : pression artérielle moyenne non invasive ;
+* `ART_MAP` : pression artérielle moyenne invasive (mesure **continue**) ;
+* `NIBP_MAP` : pression artérielle moyenne non invasive (mesure **intermittente**, voir ci-dessous) ;
 * `SpO2` : saturation périphérique en oxygène ;
 * `HR` : fréquence cardiaque ;
 * `EtCO2` : dioxyde de carbone en fin d'expiration.
@@ -34,6 +34,96 @@ Signaux actuellement traités :
 Le pipeline détecte des anomalies simples, contrôle l'exploitabilité des signaux
 et calcule un indice de priorité technique. Cet indice sert à orienter la lecture,
 pas à mesurer une gravité clinique.
+
+### Échantillonnage et cas du NIBP
+
+Les signaux du Solar8000 sont enregistrés à un pas de `2 s`, ce qui justifie le
+traitement à intervalle de `2 s`. Cette hypothèse de mesure continue est valable
+pour `ART_MAP`, `SpO2`, `HR` et `EtCO2`.
+
+Elle ne l'est pas pour `NIBP_MAP`. Un brassard oscillométrique mesure de façon
+intermittente (typiquement toutes les quelques minutes). Entre deux mesures, la
+valeur présente dans l'enregistrement à `2 s` n'est pas une mesure réelle.
+Appliquer telle quelle une logique de durée (« sous le seuil pendant `60 s` ») au
+`NIBP_MAP` peut donc produire des épisodes qui reflètent l'intervalle de mesure du
+brassard, pas un événement physiologique continu. La détection par durée doit être
+lue comme **fiable sur `ART_MAP`** et seulement **indicative sur `NIBP_MAP`**. Un
+traitement distinct du NIBP, respectant l'intermittence réelle des mesures, est une
+limite identifiée à corriger.
+
+### Seuils
+
+Les valeurs de seuil ne sont pas toutes au même niveau de justification. Le tableau
+ci-dessous distingue ce qui s'appuie sur la littérature peropératoire de ce qui
+relève d'un choix de conception.
+
+| Signal | Modéré | Sévère | Statut de la valeur |
+| --- | --- | --- | --- |
+| Pression moyenne — hypotension | `< 65 mmHg` | `< 50 mmHg` | **Sourcé.** `65 mmHg` est le seuil absolu de référence en peropératoire. |
+| Pression moyenne — hypertension | `> 120 mmHg` | `> 140 mmHg` | **Faiblement étayé.** Paramètre provisoire (voir ci-dessous). |
+| `SpO2` | `< 90 %` | `< 85 %` | Repère clinique usuel (`90 %` ≈ PaO2 60 mmHg). |
+| `HR` | `< 50` ou `> 120 /min` | `< 40` ou `> 150 /min` | Bornes de surveillance standards, non issues d'une guideline spécifique. |
+| `EtCO2` | `< 25` ou `> 50 mmHg` | `< 20` ou `> 60 mmHg` | Bornes d'alerte raisonnables (normale `35–45 mmHg`). |
+
+**Hypotension (le seuil le mieux étayé).** Sous une pression artérielle moyenne de
+`65 mmHg`, le risque de lésion rénale et myocardique augmente progressivement avec
+la durée d'exposition (Salmasi et al., 2017 ; consensus POQI sur l'hypotension
+peropératoire). La fenêtre de `60 s` n'est pas arbitraire : elle correspond à la
+définition opérationnelle usuelle d'un épisode hypotensif (MAP `< 65 mmHg` pendant
+au moins `1 min`). Le seuil sévère de `50 mmHg` correspond à une hypotension
+profonde, où même de courtes durées sont associées à un risque accru.
+
+**Hypertension (le maillon faible, assumé comme tel).** Les seuils de `120` et
+`140 mmHg` sont exprimés en pression *moyenne*. Une MAP de `120 mmHg` correspond
+déjà à une pression systolique nettement au-dessus de la normale : l'étiquette
+« modéré » sous-estime la réalité de la valeur. De plus, l'hypertension
+peropératoire est nettement moins associée à des complications postopératoires que
+l'hypotension dans la littérature. Ces seuils sont donc des **paramètres de
+conception provisoires**, à recalibrer ou à retirer dans une version ultérieure.
+
+### Durées
+
+Les durées minimales utilisées pour qualifier les épisodes doivent être lues comme
+des paramètres du prototype, pas comme des seuils de décision clinique. Seule la
+fenêtre de `60 s` de l'hypotension s'appuie sur une définition issue de la
+littérature (cf. ci-dessus). Les fenêtres modérées de `30 s` appliquées à `SpO2`,
+`HR` et `EtCO2` relèvent d'un choix de conception : elles filtrent les fluctuations
+isolées et limitent les fausses alertes, dans l'esprit des travaux sur la fatigue
+d'alarme et la réduction des fausses alarmes.
+
+La durée courte de `15 s` retenue pour tous les épisodes sévères est une
+**simplification de conception conservatrice**, pas une valeur clinique. Elle
+suppose implicitement une criticité temporelle équivalente entre des événements
+très différents : une bradycardie sévère justifierait en pratique une réaction
+quasi-immédiate, là où `15 s` reste raisonnable pour une désaturation. Ce choix est
+donc prudent pour certains signaux et perfectible pour d'autres.
+
+Ces références justifient le **principe** d'un filtrage temporel prudent et le seuil
+d'hypotension ; elles ne valident pas automatiquement les autres valeurs numériques
+retenues ici. Ces seuils et durées sont actuellement codés comme constantes dans les
+règles d'analyse et devraient être exposés comme paramètres configurables si le
+projet évolue.
+
+Références indicatives :
+
+* Walsh et al., [*Relationship Between Intraoperative Mean Arterial Pressure and
+  Clinical Outcomes after Noncardiac Surgery*](https://doi.org/10.1097/ALN.0b013e3182a10e26),
+  2013.
+* Salmasi et al., [*Relationship between Intraoperative Hypotension, Defined by
+  Either Reduction from Baseline or Absolute Thresholds, and Acute Kidney and
+  Myocardial Injury after Noncardiac Surgery*](https://doi.org/10.1097/ALN.0000000000001432),
+  2017.
+* Wesselink et al., [*Intraoperative hypotension and the risk of postoperative
+  adverse outcomes: a systematic review*](https://doi.org/10.1093/bja/aey018),
+  2018.
+
+* The Joint Commission, [*Sentinel Event Alert 50: Medical device alarm safety in
+  hospitals*](https://www.jointcommission.org/en/knowledge-library/newsletters/sentinel-event-alert/issue-50),
+  2013.
+* Li, Johnson, Mark, [*False arrhythmia alarm reduction in the intensive care
+  unit*](https://arxiv.org/abs/1709.03562), 2017.
+* Dey et al., [*Weakly Supervised Classification of Vital Sign Alerts as Real or
+  Artifact*](https://arxiv.org/abs/2206.09074), 2022.
 
 ## Limites
 
